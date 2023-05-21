@@ -1,7 +1,7 @@
 import {Box, Button, Flex, GridItem, SimpleGrid, useInterval} from "@chakra-ui/react";
 import {useAppDispatch, useAppSelector} from "../hook/redux";
 import Pixel from "./pixel";
-import {figureActions} from "../store/slice/figure.slice";
+import {boardActions} from "../store/slice/board";
 
 interface TetrisProps {
     horizontal: number,
@@ -14,17 +14,17 @@ const Tetris = ({horizontal}: TetrisProps) => {
 
     // useInterval(() => {
     //     dispatch(figureActions.down())
-    // }, 1000)
+    // }, 500)
 
     return (
         <Box bgGradient={'linear(to-b, blue.200, teal.500)'}>
             <Flex minHeight='100vh' width='full' align='center' justifyContent='center'>
                 <Flex direction='column' bgColor='transparent'>
-                    <Button size='md' bgColor='white' onClick={() => dispatch(figureActions.left())}>{'<<'}</Button>
+                    <Button size='md' bgColor='white' onClick={() => dispatch(boardActions.left())}>{'<<'}</Button>
                 </Flex>
                 <Flex direction='column' bgColor='white' boxShadow='xl' p={4} rounded={10}>
                     <SimpleGrid columns={horizontal} spacing={1} onClick={() => {
-                        dispatch(figureActions.down())
+                        dispatch(boardActions.down())
                     }}>
                         {
                             grid.map((raws, iy) => raws.map((cell, ix) => (
@@ -37,7 +37,7 @@ const Tetris = ({horizontal}: TetrisProps) => {
                     </SimpleGrid>
                 </Flex>
                 <Flex direction='column' bgColor='transparent'>
-                    <Button size='md' bgColor='white' onClick={() => dispatch(figureActions.right())}>{'>>'}</Button>
+                    <Button size='md' bgColor='white' onClick={() => dispatch(boardActions.right())}>{'>>'}</Button>
                 </Flex>
             </Flex>
         </Box>

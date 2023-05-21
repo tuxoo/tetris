@@ -1,10 +1,10 @@
 import {configureStore} from "@reduxjs/toolkit";
-import {figureReducer} from "./slice/figure.slice";
+import {boardReducer} from "./slice/board";
 import {setupListeners} from "@reduxjs/toolkit/query";
 
 export const store = configureStore({
     reducer: {
-        figure: figureReducer
+        figure: boardReducer
     }
 })
 
