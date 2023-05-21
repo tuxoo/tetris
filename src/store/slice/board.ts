@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {SQUARE} from "../../model/const/figure.const";
+import {Figure, LINE, L_SHAPE, SQUARE, E_SHAPE, Z_SHAPE, IL_SHAPE, IZ_SHAPE} from "../../model/const/figure.const";
 
-const height = 5
+const height = 10
 const weight = 10
 
 const activeRawsIndex = 0
@@ -13,12 +13,14 @@ export interface BoardState {
     score: number,
     activeArea: number[][],
     grid: boolean[][],
+    figures: Figure[]
 }
 
 const initialState: BoardState = {
     score: 0,
     activeArea: [],
     grid: emptyGrid,
+    figures: [SQUARE, LINE, L_SHAPE, IL_SHAPE, E_SHAPE, Z_SHAPE, IZ_SHAPE]
 }
 
 const slice = createSlice({
@@ -68,8 +70,10 @@ const slice = createSlice({
             })
         },
         down(state, action: PayloadAction) {
-            if (state.activeArea.length === 0 && state.grid[height - 1].every(raw => (raw))) { // clear lines
-                const shiftDown = (step: number) => { // shift down until empty line
+            // clear lines
+            if (state.activeArea.length === 0 && state.grid[height - 1].every(raw => (raw))) {
+                // shift down until empty line
+                const shiftDown = (step: number) => {
                     let stepDec = step
 
                     while (state.grid[stepDec].includes(true)) {
@@ -87,26 +91,29 @@ const slice = createSlice({
                 shiftDown(height - 1)
             }
 
-            if (state.activeArea.length === 0 || state.activeArea[activeRawsIndex][0] === 0) { // setup new figure
-                state.activeArea = [...SQUARE.space]
+            // setup new figure
+            if (state.activeArea.length === 0 || state.activeArea[activeRawsIndex][0] === 0) {
+                const figure = state.figures[Math.floor(Math.random() * state.figures.length)]
+
+                state.activeArea = [...figure.space]
 
                 if (state.grid[1]
                     .slice(state.activeArea[activeCellsIndex][0], state.activeArea[activeCellsIndex][0] + state.activeArea[activeCellsIndex].length)
                     .includes(true)) {
 
-                    state.grid[0].forEach((_, ix) => {
-                        state.grid[0][ix] = SQUARE.shape[0][ix]
+                    figure.space[activeCellsIndex].forEach((ix, i) => {
+                        state.grid[0][ix] = figure.shape[figure.shape.length - 1][i]
                     })
 
-                    state.activeArea = [[1], SQUARE.space[1]]
+                    state.activeArea = [[1], figure.space[figure.shape.length - 1]]
 
                     return;
                 }
 
-                // TODO: fill figure
+                // fill figure
                 state.activeArea[activeRawsIndex].forEach(iy => {
                     state.activeArea[activeCellsIndex].forEach(ix => {
-                        state.grid[iy][ix] = SQUARE.shape[iy][ix]
+                        state.grid[iy][ix] = figure.shape[iy][ix]
                     })
                 })
 
@@ -128,7 +135,8 @@ const slice = createSlice({
                     } else {
                         state.activeArea = []
 
-                        if (state.grid[0].includes(true)) { // game over
+                        // game over
+                        if (state.grid[0].includes(true)) {
                             state.grid = emptyGrid
                         }
 
@@ -152,7 +160,8 @@ const slice = createSlice({
                 state.activeArea = []
             }
 
-            if (state.grid[0].includes(true)) { // game over
+            // game over
+            if (state.grid[0].includes(true)) {
                 state.grid = emptyGrid
             }
         }
