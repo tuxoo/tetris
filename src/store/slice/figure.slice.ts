@@ -1,17 +1,20 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
-const height = 5
+const height = 10
 const weight = 10
+
+const activeRawsIndex = 0
+const activeCellsIndex = 1
 
 export interface FigureState {
     score: number,
-    active: number[],
+    active: number[][],
     grid: boolean[][],
 }
 
 const initialState: FigureState = {
     score: 0,
-    active: [0, 1],
+    active: [],
     grid: Array<boolean[]>(height).fill(Array<boolean>(weight).fill(false)),
 }
 
@@ -24,171 +27,125 @@ const slice = createSlice({
             state.grid[9][4] = true // TODO: install start position
         },
         left(state, action: PayloadAction) {
-            const tryPosition : boolean[][] = state.active.map(row => {
-                let nextPosition: boolean[] = []
+            if (state.active.length === 0
+                || state.active[activeRawsIndex][0] === 0
+                || state.active[activeCellsIndex][0] === 0
+            ) {
+                return
+            }
 
-                if (!state.grid[row - 1][state.grid[0].length - 1]) {
-                    nextPosition = state.grid[row - 1].slice()
-                    for (let i = 0; i < 1; i++) {
-                        nextPosition.unshift(...nextPosition.splice(1))
-                    }
-                }
-
-                return nextPosition
-            })
-
-            for (let i= state.active[0]; i < state.active[0] + state.active.length; i++) {
-                if (state.grid[i - 1][0]) {
-                    return
+            for (let iy = state.active[activeRawsIndex][state.active[activeRawsIndex].length - 1]; iy >= state.active[activeRawsIndex][0]; iy--) {
+                for (let ix = state.active[activeCellsIndex][0]; ix <= state.active[activeCellsIndex][state.active[activeCellsIndex].length - 1]; ix++) {
+                    state.grid[iy - 1][ix - 1] = state.grid[iy - 1][ix]
+                    state.grid[iy - 1][ix] = false
                 }
             }
 
-            state.active.forEach((raw, i) => {
-                state.grid[raw - 1] = tryPosition[i]
+            state.active[activeCellsIndex].forEach((_, ix) => {
+                state.active[activeCellsIndex][ix]--
             })
         },
         right(state, action: PayloadAction) {
-            const tryPosition : boolean[][] = state.active.map(row => {
-                let nextPosition: boolean[] = []
+            if (state.active.length === 0
+                || state.active[activeRawsIndex][0] === 0
+                || state.active[activeCellsIndex][state.active[activeCellsIndex].length - 1] === weight - 1
+            ) {
+                return
+            }
 
-                if (!state.grid[row - 1][state.grid[0].length - 1]) {
-                    nextPosition = state.grid[row - 1].slice()
-                    for (let i = 0; i < 1; i++) {
-                        nextPosition.unshift(...nextPosition.splice(-1))
-                    }
-
-                }
-
-                return nextPosition
-            })
-
-            for (let i= state.active[0]; i < state.active[0] + state.active.length; i++) {
-                if (state.grid[i - 1][state.grid[0].length - 1]) {
-                    return
+            for (let iy = state.active[activeRawsIndex][state.active[activeRawsIndex].length - 1]; iy >= state.active[activeRawsIndex][0]; iy--) {
+                for (let ix = state.active[activeCellsIndex][state.active[activeCellsIndex].length - 1]; ix >= state.active[activeCellsIndex][0]; ix--) {
+                    state.grid[iy - 1][ix + 1] = state.grid[iy - 1][ix]
+                    state.grid[iy - 1][ix] = false
                 }
             }
 
-            state.active.forEach((raw, i) => {
-                state.grid[raw - 1] = tryPosition[i]
+            state.active[activeCellsIndex].forEach((_, ix) => {
+                state.active[activeCellsIndex][ix]++
             })
         },
         down(state, action: PayloadAction) {
-            if (state.grid[state.grid.length - 1].every(raw => (raw))) { // clear line
-                state.score++
-                state.grid[state.grid.length - 1] = Array<boolean>(state.grid[0].length).fill(false)
+            // TODO: shift down after clearing
+            if (state.active.length !== 0 && state.active[0][0] === 0) { // clear lines
+                for (let iy = height - 1; iy > height - state.active[activeRawsIndex].length - 1; iy--) {
+                    if (state.grid[iy].every(raw => (raw))) { // clear line
+
+                        // state.grid[iy] = Array<boolean>(weight).fill(false)
+
+                        let ss = iy
+
+                        console.log(ss)
+
+                        while (state.grid[ss - 1].includes(true)) {
+                            console.log(ss)
+                            state.grid[ss] = state.grid[ss - 1]
+                            ss--
+                        }
+
+                        state.score++
+                    }
+                }
             }
 
-            if (state.active[0] === 0) {
-                const start = Math.abs(Math.floor(Math.random() * state.grid[0].length - 1))
-                switch (true) {
-                    case (start === 0 || start === 1 || state.grid[0].length - 1):
-                        switch (start) {
-                            case 0 :
-                                state.grid[0][start] = true
-                                state.grid[0][start + 1] = true
-                                state.grid[1][start] = true
-                                state.grid[1][start + 1] = true
-                                break
-                            case state.grid[0].length - 1:
-                                state.grid[0][start] = true
-                                state.grid[0][start - 1] = true
-                                state.grid[1][start] = true
-                                state.grid[1][start - 1] = true
-                                break
-                            default:
-                                state.grid[0][start] = true
-                                state.grid[0][start - 1] = true
-                                state.grid[1][start] = true
-                                state.grid[1][start - 1] = true
-                                break
-                        }
-                        break
-                    case (start === 3 || start === 4 || start === 5):
-                        switch (start) {
-                            case 3 :
-                                state.grid[0][start + 2] = true
-                                state.grid[0][start + 1] = true
-                                state.grid[1][start + 1] = true
-                                state.grid[1][start] = true
-                                break
-                            case 4:
-                                state.grid[0][start] = true
-                                state.grid[0][start - 1] = true
-                                state.grid[1][start - 1] = true
-                                state.grid[1][start - 2] = true
-                                break
-                            default:
-                                state.grid[0][start] = true
-                                state.grid[0][start - 1] = true
-                                state.grid[1][start] = true
-                                state.grid[1][start + 1] = true
-                                break
-                        }
-                        break
-                    default :
-                        switch (start) {
-                            case 6 :
-                                state.grid[0][start] = true
-                                state.grid[1][start] = true
-                                state.grid[1][start - 1] = true
-                                state.grid[1][start + 1] = true
-                                break
-                            default:
-                                state.grid[1][start] = true
-                                state.grid[0][start] = true
-                                state.grid[0][start - 1] = true
-                                state.grid[0][start + 1] = true
-                                break
-                        }
-                        break
+
+            if (state.active.length === 0 || state.active[activeRawsIndex][0] === 0) {
+                state.active = [[0, 1], [1, 2]] // TODO: active test left up line
+
+                if (state.grid[state.active[activeRawsIndex][state.active[activeRawsIndex].length - 1]]
+                    .slice(state.active[activeCellsIndex][0], state.active[activeCellsIndex][state.active[activeCellsIndex].length - 1])
+                    .includes(true)) {
+                    state.grid[state.active[activeRawsIndex][0]] = [false, true, true, false, false, false, false, false, false, false]
+
+                    state.active = [[1], [1, 2]] // stub
+
+                    return;
                 }
 
-                state.active.forEach((_, i) => {
-                    state.active[i]++
+                // TODO: stub
+                state.grid[0] = [false, true, true, false, false, false, false, false, false, false] // TODO: test left up line
+                state.grid[1] = [false, true, true, false, false, false, false, false, false, false] // TODO: test left up line
+
+                state.active[activeRawsIndex].forEach((_, iy) => {
+                    state.active[activeRawsIndex][iy]++
                 })
 
                 return
             }
 
-            // for (let iy = state.grid.length - 1; iy > 0; iy--) {
-            for (let iy = state.active[state.active.length - 1]; iy >= state.active[0]; iy--) {
-                let prev: number[] = []
-                let next: number[] = []
 
-                for (let i = 0; i < state.grid[iy].length; i++) {
-                    if (state.grid[iy][i]) {
-                        prev.push(i)
-                    }
+            const nextIsBusy = state.grid[state.active[activeRawsIndex][state.active[activeRawsIndex].length - 1]].slice(state.active[activeCellsIndex][0], state.active[activeCellsIndex][state.active[activeCellsIndex].length - 1] + 1).includes(true)
 
-                    if (state.grid[iy - 1][i]) {
-                        next.push(i)
-                    }
-                }
+            for (let iy = state.active[activeRawsIndex][state.active[activeRawsIndex].length - 1]; iy >= state.active[activeRawsIndex][0]; iy--) {
+                for (let ix = state.active[activeCellsIndex][0]; ix <= state.active[activeCellsIndex][state.active[activeCellsIndex].length - 1]; ix++) {
+                    if (!nextIsBusy) {
+                        state.grid[iy][ix] = state.grid[iy - 1][ix]
+                        state.grid[iy - 1][ix] = false
+                    } else {
+                        state.active = []
 
-                console.log(next.filter(x => prev.includes(x)).toString())
-
-                if (next.filter(x => prev.includes(x)).length === 0) {
-                    for (let ix = 0; ix < state.grid[iy].length; ix++) {
-                        if (!state.grid[iy][ix]) {
-                            state.grid[iy][ix] = state.grid[iy - 1][ix]
-                            state.grid[iy - 1][ix] = false
+                        if (state.grid[0].includes(true)) { // game over
+                            state.grid = Array<boolean[]>(state.grid.length).fill(Array<boolean>(weight).fill(false))
                         }
+
+                        return
                     }
                 }
+            }
+
+            if (state.active[activeRawsIndex][state.active[activeRawsIndex].length - 1] < state.grid.length - 1) {
+                state.active[activeRawsIndex].forEach((_, iy) => {
+                    state.active[activeRawsIndex][iy]++
+                })
+            } else {
+                state.active[activeRawsIndex].forEach((_, iy) => {
+                    state.active[activeRawsIndex][iy] = 0
+                })
             }
 
             if (state.grid[0].includes(true)) { // game over
-                state.grid = Array<boolean[]>(state.grid.length).fill(Array<boolean>(state.grid[0].length).fill(false))
+                state.grid = Array<boolean[]>(state.grid.length).fill(Array<boolean>(weight).fill(false))
             }
-
-            if (state.active[state.active.length - 1] < state.grid.length - 1) {
-                state.active.forEach((_, i) => {
-                    state.active[i]++
-                })
-            } else {
-                state.active = initialState.active
-            }
-        },
+        }
     },
 })
 
