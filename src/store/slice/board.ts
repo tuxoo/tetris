@@ -1,8 +1,8 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {Figure, LINE, L_SHAPE, SQUARE, E_SHAPE, Z_SHAPE, IL_SHAPE, IZ_SHAPE} from "../../model/const/figure.const";
+import {E_SHAPE, Figure, IL_SHAPE, IZ_SHAPE, L_SHAPE, LINE, SQUARE, Z_SHAPE} from "../../model/const/figure.const";
 
-const height = 10
-const weight = 10
+const height = 20
+const weight = 20
 
 const activeRawsIndex = 0
 const activeCellsIndex = 1
@@ -27,10 +27,6 @@ const slice = createSlice({
     name: 'board',
     initialState,
     reducers: {
-        setup(state, action: PayloadAction) {
-            state.grid[9][3] = true // TODO: install start position
-            state.grid[9][4] = true // TODO: install start position
-        },
         left(state, action: PayloadAction) {
             if (state.activeArea.length === 0
                 || state.activeArea[activeRawsIndex][0] === 0
@@ -93,9 +89,17 @@ const slice = createSlice({
 
             // setup new figure
             if (state.activeArea.length === 0 || state.activeArea[activeRawsIndex][0] === 0) {
+                // get random figure
                 const figure = state.figures[Math.floor(Math.random() * state.figures.length)]
 
                 state.activeArea = [...figure.space]
+
+                const randomShift = Math.floor(Math.random() * (weight - figure.space[activeCellsIndex].length))
+                console.log(randomShift)
+
+                state.activeArea[activeCellsIndex].forEach((_, ix) => {
+                    state.activeArea[activeCellsIndex][ix] = state.activeArea[activeCellsIndex][ix] + randomShift
+                })
 
                 if (state.grid[1]
                     .slice(state.activeArea[activeCellsIndex][0], state.activeArea[activeCellsIndex][0] + state.activeArea[activeCellsIndex].length)
@@ -112,14 +116,15 @@ const slice = createSlice({
 
                 // fill figure
                 state.activeArea[activeRawsIndex].forEach(iy => {
-                    state.activeArea[activeCellsIndex].forEach(ix => {
-                        state.grid[iy][ix] = figure.shape[iy][ix]
+                    state.activeArea[activeCellsIndex].forEach((ix, i) => {
+                        state.grid[iy][ix] = figure.shape[iy][i]
                     })
                 })
 
                 state.activeArea[activeRawsIndex] = state.activeArea[activeRawsIndex].map(iy => {
                     return iy + 1
                 })
+
                 return
             }
 

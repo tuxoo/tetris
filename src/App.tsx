@@ -4,7 +4,7 @@ import Tetris from "./component/tetris";
 function App() {
     return (
         <>
-            <Tetris horizontal={10}/>
+            <Tetris horizontal={20}/>
         </>
     );
 }

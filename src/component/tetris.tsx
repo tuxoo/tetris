@@ -12,9 +12,9 @@ const Tetris = ({horizontal}: TetrisProps) => {
     const dispatch = useAppDispatch()
     const {grid} = useAppSelector(state => state.figure)
 
-    // useInterval(() => {
-    //     dispatch(figureActions.down())
-    // }, 500)
+    useInterval(() => {
+        dispatch(boardActions.down())
+    }, 500)
 
     return (
         <Box bgGradient={'linear(to-b, blue.200, teal.500)'}>
@@ -43,13 +43,5 @@ const Tetris = ({horizontal}: TetrisProps) => {
         </Box>
     )
 }
-
-// Array<number>(vertical).fill(0).map((_, y) => (
-//     Array<number>(horizontal).fill(0).map((_, x) => (
-//         <GridItem key={`${x}${y}`}>
-//             <Pixel isActive={raws.includes(x) && columns.includes(y)} key={`${x}${y}`}/>
-//         </GridItem>
-//     ))
-// ))
 
 export default Tetris
