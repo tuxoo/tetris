@@ -10,9 +10,10 @@ import {
     Z_SHAPE,
     ZERO
 } from "../../model/const/figure.const";
+import {toast} from "react-toastify";
 
-export const HEIGHT = 10
-export const WEIGHT = 10
+export const HEIGHT = 20
+export const WEIGHT = 16
 
 const activeRawsIndex = 0
 const activeCellsIndex = 1
@@ -32,7 +33,6 @@ const initialState: BoardState = {
     activeArea: [],
     grid: emptyGrid,
     figures: [SQUARE, LINE, L_SHAPE, IL_SHAPE, E_SHAPE, Z_SHAPE, IZ_SHAPE],
-    // figures: [SQUARE, LINE],
     figure: ZERO,
 }
 
@@ -173,6 +173,8 @@ const slice = createSlice({
                         // game over
                         if (state.grid[0].includes(true)) {
                             state.grid = emptyGrid
+
+                            toast.error("Game Over")
                         }
 
                         return
@@ -199,6 +201,8 @@ const slice = createSlice({
             // game over
             if (state.grid[0].includes(true)) {
                 state.grid = emptyGrid
+
+                toast.error("Game Over")
             }
         }
     },
