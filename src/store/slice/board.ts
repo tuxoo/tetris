@@ -1,26 +1,39 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {E_SHAPE, Figure, IL_SHAPE, IZ_SHAPE, L_SHAPE, LINE, SQUARE, Z_SHAPE} from "../../model/const/figure.const";
+import {
+    E_SHAPE,
+    Figure,
+    IL_SHAPE,
+    IZ_SHAPE,
+    L_SHAPE,
+    LINE,
+    SQUARE,
+    Z_SHAPE,
+    ZERO
+} from "../../model/const/figure.const";
 
-const height = 20
-const weight = 20
+export const HEIGHT = 10
+export const WEIGHT = 10
 
 const activeRawsIndex = 0
 const activeCellsIndex = 1
 
-const emptyGrid = Array<boolean[]>(height).fill(Array<boolean>(weight).fill(false))
+const emptyGrid = Array<boolean[]>(HEIGHT).fill(Array<boolean>(WEIGHT).fill(false))
 
 export interface BoardState {
     score: number,
     activeArea: number[][],
     grid: boolean[][],
-    figures: Figure[]
+    figures: Figure[],
+    figure: Figure,
 }
 
 const initialState: BoardState = {
     score: 0,
     activeArea: [],
     grid: emptyGrid,
-    figures: [SQUARE, LINE, L_SHAPE, IL_SHAPE, E_SHAPE, Z_SHAPE, IZ_SHAPE]
+    figures: [SQUARE, LINE, L_SHAPE, IL_SHAPE, E_SHAPE, Z_SHAPE, IZ_SHAPE],
+    // figures: [SQUARE, LINE],
+    figure: ZERO,
 }
 
 const slice = createSlice({
@@ -29,13 +42,12 @@ const slice = createSlice({
     reducers: {
         left(state, action: PayloadAction) {
             if (state.activeArea.length === 0
-                || state.activeArea[activeRawsIndex][0] === 0
                 || state.activeArea[activeCellsIndex][0] === 0
             ) {
                 return
             }
 
-            for (let iy = state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1]; iy >= state.activeArea[activeRawsIndex][0]; iy--) {
+            for (let iy = state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1] + 1; iy > state.activeArea[activeRawsIndex][0]; iy--) {
                 for (let ix = state.activeArea[activeCellsIndex][0]; ix <= state.activeArea[activeCellsIndex][state.activeArea[activeCellsIndex].length - 1]; ix++) {
                     state.grid[iy - 1][ix - 1] = state.grid[iy - 1][ix]
                     state.grid[iy - 1][ix] = false
@@ -48,13 +60,12 @@ const slice = createSlice({
         },
         right(state, action: PayloadAction) {
             if (state.activeArea.length === 0
-                || state.activeArea[activeRawsIndex][0] === 0
-                || state.activeArea[activeCellsIndex][state.activeArea[activeCellsIndex].length - 1] === weight - 1
+                || state.activeArea[activeCellsIndex][state.activeArea[activeCellsIndex].length - 1] === WEIGHT - 1
             ) {
                 return
             }
 
-            for (let iy = state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1]; iy >= state.activeArea[activeRawsIndex][0]; iy--) {
+            for (let iy = state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1] + 1; iy > state.activeArea[activeRawsIndex][0]; iy--) {
                 for (let ix = state.activeArea[activeCellsIndex][state.activeArea[activeCellsIndex].length - 1]; ix >= state.activeArea[activeCellsIndex][0]; ix--) {
                     state.grid[iy - 1][ix + 1] = state.grid[iy - 1][ix]
                     state.grid[iy - 1][ix] = false
@@ -67,36 +78,41 @@ const slice = createSlice({
         },
         down(state, action: PayloadAction) {
             // clear lines
-            if (state.activeArea.length === 0 && state.grid[height - 1].every(raw => (raw))) {
-                // shift down until empty line
-                const shiftDown = (step: number) => {
-                    let stepDec = step
+            if (state.activeArea.length === 0) {
+                for (let iy = HEIGHT - 1; iy > 0; iy--) {
+                    if (state.grid[iy].every(raw => (raw))) {
+                        // shift down until empty line
+                        const shiftDown = (step: number) => {
+                            let stepDec = step
 
-                    while (state.grid[stepDec].includes(true)) {
-                        state.grid[stepDec] = state.grid[stepDec - 1]
-                        state.score++
+                            while (state.grid[stepDec].includes(true)) {
+                                state.grid[stepDec] = state.grid[stepDec - 1]
+                                state.score++
 
-                        stepDec--
-                    }
+                                stepDec--
+                            }
 
-                    if (state.grid[height - 1].every(raw => (raw))) {
-                        shiftDown(height - 1)
+                            if (state.grid[iy].every(raw => (raw))) {
+                                shiftDown(iy)
+                            }
+                        }
+
+                        shiftDown(iy)
                     }
                 }
-
-                shiftDown(height - 1)
             }
 
             // setup new figure
-            if (state.activeArea.length === 0 || state.activeArea[activeRawsIndex][0] === 0) {
+            if (state.activeArea.length === 0) {
                 // get random figure
-                const figure = state.figures[Math.floor(Math.random() * state.figures.length)]
+                state.figure = state.figures[Math.floor(Math.random() * state.figures.length)]
 
-                state.activeArea = [...figure.space]
+                state.figure.space.forEach(raw => {
+                    state.activeArea.push([...raw])
+                })
 
-                const randomShift = Math.floor(Math.random() * (weight - figure.space[activeCellsIndex].length))
-                console.log(randomShift)
-
+                // get random figure shift
+                const randomShift = Math.floor(Math.random() * (WEIGHT - state.figure.space[activeCellsIndex].length))
                 state.activeArea[activeCellsIndex].forEach((_, ix) => {
                     state.activeArea[activeCellsIndex][ix] = state.activeArea[activeCellsIndex][ix] + randomShift
                 })
@@ -105,38 +121,52 @@ const slice = createSlice({
                     .slice(state.activeArea[activeCellsIndex][0], state.activeArea[activeCellsIndex][0] + state.activeArea[activeCellsIndex].length)
                     .includes(true)) {
 
-                    figure.space[activeCellsIndex].forEach((ix, i) => {
-                        state.grid[0][ix] = figure.shape[figure.shape.length - 1][i]
+                    state.figure.space[activeCellsIndex].forEach((ix, item) => {
+                        state.grid[0][ix] = state.figure.shape[state.figure.shape.length - 1][item]
                     })
 
-                    state.activeArea = [[1], figure.space[figure.shape.length - 1]]
+                    state.activeArea = [[1], state.figure.space[state.figure.shape.length - 1]]
 
                     return;
                 }
 
                 // fill figure
                 state.activeArea[activeRawsIndex].forEach(iy => {
-                    state.activeArea[activeCellsIndex].forEach((ix, i) => {
-                        state.grid[iy][ix] = figure.shape[iy][i]
+                    state.activeArea[activeCellsIndex].forEach((ix, item) => {
+                        state.grid[iy][ix] = state.figure.shape[iy][item]
                     })
-                })
-
-                state.activeArea[activeRawsIndex] = state.activeArea[activeRawsIndex].map(iy => {
-                    return iy + 1
                 })
 
                 return
             }
 
-            const nextIsBusy = state.grid[state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1]]
+            let nextIsBusy = false
+            state.grid[state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1] + 1]
                 .slice(state.activeArea[activeCellsIndex][0], state.activeArea[activeCellsIndex][state.activeArea[activeCellsIndex].length - 1] + 1)
-                .includes(true)
+                .forEach((cell, item) => {
+                    if ((state.figure.shape[state.figure.shape.length - 1][item] && cell)) {
+                        nextIsBusy = true
+                    }
 
-            for (let iy = state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1]; iy >= state.activeArea[activeRawsIndex][0]; iy--) {
+                    // stub for z-shapes
+                    if (state.figure.shape[state.figure.shape.length - 1].includes(false)) {
+                        if ((state.figure.shape[state.figure.shape.length - 1]
+                            [state.figure.shape[state.figure.shape.length - 1].indexOf(false)] && cell)) {
+                            nextIsBusy = true
+                        }
+                    }
+                })
+
+            let iyCounter = state.activeArea[activeRawsIndex].length - 1
+            for (let iy = state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1] + 1; iy > state.activeArea[activeRawsIndex][0]; iy--) {
+                let ixCounter = 0
+
                 for (let ix = state.activeArea[activeCellsIndex][0]; ix <= state.activeArea[activeCellsIndex][state.activeArea[activeCellsIndex].length - 1]; ix++) {
                     if (!nextIsBusy) {
-                        state.grid[iy][ix] = state.grid[iy - 1][ix]
-                        state.grid[iy - 1][ix] = false
+                        if (state.figure.shape[iyCounter][ixCounter]) {
+                            state.grid[iy][ix] = state.grid[iy - 1][ix]
+                            state.grid[iy - 1][ix] = false
+                        }
                     } else {
                         state.activeArea = []
 
@@ -147,18 +177,19 @@ const slice = createSlice({
 
                         return
                     }
+
+                    ixCounter++
                 }
+
+                iyCounter--
             }
 
-            if (state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1] < state.grid.length - 1) {
+            if (state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1] < state.grid.length - 2) {
                 state.activeArea[activeRawsIndex].forEach((_, iy) => {
                     state.activeArea[activeRawsIndex][iy]++
                 })
 
-                if (state.grid[state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1]]
-                    .slice(state.activeArea[activeCellsIndex][0], state.activeArea[activeCellsIndex][state.activeArea[activeCellsIndex].length - 1] + 1)
-                    .includes(true)
-                ) {
+                if (state.grid[state.activeArea[activeRawsIndex][state.activeArea[activeRawsIndex].length - 1]].every(raw => (raw))) {
                     state.activeArea = []
                 }
             } else {

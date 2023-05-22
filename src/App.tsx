@@ -1,10 +1,11 @@
 import React from 'react';
 import Tetris from "./component/tetris";
+import {WEIGHT} from "./store/slice/board";
 
 function App() {
     return (
         <>
-            <Tetris horizontal={20}/>
+            <Tetris horizontal={WEIGHT}/>
         </>
     );
 }

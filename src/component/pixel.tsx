@@ -7,16 +7,17 @@ interface PixelProps {
 const Pixel = ({isActive}: PixelProps) => {
     return (
         <Box
+            border='1px'
+            borderColor={isActive ? 'white' : 'transparent'}
             bg={isActive ? 'orange.200' : 'transparent'}
+            color='transparent'
             h='full'
             width='full'
-            p='5'
-            color='white'
+            p='4'
             justifyContent='center'
-            rounded='5'
+            rounded='4'
             userSelect='none'
-        >
-        </Box>
+        />
     )
 }
 

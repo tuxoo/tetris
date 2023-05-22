@@ -12,9 +12,9 @@ const Tetris = ({horizontal}: TetrisProps) => {
     const dispatch = useAppDispatch()
     const {grid} = useAppSelector(state => state.figure)
 
-    useInterval(() => {
-        dispatch(boardActions.down())
-    }, 500)
+    // useInterval(() => {
+    //     dispatch(boardActions.down())
+    // }, 100)
 
     return (
         <Box bgGradient={'linear(to-b, blue.200, teal.500)'}>
@@ -23,7 +23,7 @@ const Tetris = ({horizontal}: TetrisProps) => {
                     <Button size='md' bgColor='white' onClick={() => dispatch(boardActions.left())}>{'<<'}</Button>
                 </Flex>
                 <Flex direction='column' bgColor='white' boxShadow='xl' p={4} rounded={10}>
-                    <SimpleGrid columns={horizontal} spacing={1} onClick={() => {
+                    <SimpleGrid columns={horizontal} onClick={() => {
                         dispatch(boardActions.down())
                     }}>
                         {

@@ -3,6 +3,11 @@ export interface Figure {
     shape: readonly boolean[][],
 }
 
+export const ZERO: Figure = {
+    space: [],
+    shape: [],
+}
+
 export const SQUARE: Figure = {
     space: [[0, 1], [0, 1]],
     shape: [
